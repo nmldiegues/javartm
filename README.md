@@ -18,11 +18,11 @@ Building is done with ant, and requires the [ant-cpptasks][ant-cpptasks] library
 
 Note that the `ant-contrib-cpptasks` package in Ubuntu is not installed to the right place, and ant will not be able to use it automatically. (To fix it, run `sudo ln -sf /usr/share/java/ant-contrib-cpptasks.jar /usr/share/ant/lib/.`)
 
-Building also requires gcc >= 4.8, as this is the first version that adds support for the RTM instructions. It might be possible to use icc or others (feedback on this is appreciated).
+There are two alternatives for building:
+* ant's default targets need gcc >= 4.8, as this is the first version that has built-in support for RTM instructions.
+* The oldgcc-* targets provide a fallback option for other compilers. See `ant -projecthelp` for more details.
 
-As of this writing, there is no stable release of gcc 4.8 --- you will need to obtain or build your own.
-
-I plan on providing binary packages of javartm soon. If they aren't up yet, feel free to mail me to ask for one.
+I plan on providing binary packages of javartm soon. If they aren't up yet, feel free to mail me to ask for them.
 
 ## Testing with Intel SDE
 
@@ -43,6 +43,6 @@ Thanks for reading this far! :)
 [tsxspecs]: http://software.intel.com/sites/default/files/m/9/2/3/41604 "Intel Architecture Instruction Set Extensions Programming Reference"
 [ant-cpptasks]: http://ant-contrib.sourceforge.net/cpptasks/index.html
 [insthome]: https://fenix.ist.utl.pt/homepage/ist155460
-[eswweb]: http://www.esw.inesc-id.pt/cgi-bin/moin.cgi
+[eswweb]: http://www.esw.inesc-id.pt/
 [jvstm]: http://esw.inesc-id.pt/git/jvstm.git/
 [fenixf]: https://fenix-ashes.ist.utl.pt/trac/fenix-framework
