@@ -63,9 +63,25 @@
 		</cc>
 	</target>
 
-	<target name="build" depends="clean,jni-compile" description="Builds javartm (java and native resources)"/>
+	<target name="oldgcc-jni-compile" depends="jni-headers">
+		<taskdef resource="cpptasks.tasks"/>
+		<mkdir dir="${jnioutput.dir}"/>
+		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnilib.file}">
+			<compilerarg value="-Wall"/>
+			<compilerarg value="-O2"/>
+			<defineset define="JAVARTM_RTM_INTRINSICS"/>
+			<fileset dir="${c.src.dir}" includes="**/*.c"/>
+			<includepath>
+				<path path="${java.home}/../include"/>
+				<path path="${jni.dir}"/>
+			</includepath>
+		</cc>
+	</target>
 
-	<target name="jar" depends="build" description="Generates the javartm jar">
+	<target name="build" depends="clean,jni-compile" description="Builds javartm (java and native resources)"/>
+	<target name="oldgcc-build" depends="clean,oldgcc-jni-compile" description="Builds javartm (java and native resources) [GCC &lt; 4.8]"/>
+
+	<target name="generate-jar">
 		<mkdir dir="${dist.dir}"/>
 		<jar destfile="${jar.file}">
 			<manifest>
@@ -81,8 +97,11 @@
 			<fileset dir="${jni.dir}" includes="**/*.so"/>
 		</jar>
 	</target>
+	
+	<target name="jar" depends="build,generate-jar" description="Generates the javartm jar"/>
+	<target name="oldgcc-jar" depends="oldgcc-build,generate-jar" description="Generates the javartm jar [GCC &lt; 4.8]"/>
 
-	<target name="fat-jar" depends="jar" description="Generates a fat javartm jar including all dependencies">
+	<target name="generate-fat-jar">
 		<jar destfile="${jarfat.file}">
 			<manifest>
 				<!-- Who is building this jar? -->
@@ -101,6 +120,9 @@
 			</archives>
 		</jar>
 	</target>
+
+	<target name="fat-jar" depends="jar" description="Generates a fat javartm jar including all dependencies"/>
+	<target name="oldgcc-fat-jar" depends="oldgcc-jar" description="Generates a fat javartm jar including all dependencies [GCC &lt; 4.8]"/>
 
 	<!-- aliases -->
 	<target name="main" depends="build"/>

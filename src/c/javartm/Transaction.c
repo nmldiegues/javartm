@@ -18,21 +18,24 @@
  * along with javartm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// COMPILE WITH gcc 4.8 and -mrtm !
+// COMPILE WITH gcc 4.8 and -mrtm, or define JAVARTM_RTM_INTRINSICS
 
 // RTM intrinsics
 #include <immintrin.h>
 
 #ifndef __RTM__
-#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#if GCC_VERSION < 40800
-#error RTM intrinsics support not found. GCC version >= 4.8 is needed for RTM support.
-#else
-#error RTM intrinsics support not found. Please compile with -mrtm.
+	#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+	#if GCC_VERSION < 40800
+		#ifdef JAVARTM_RTM_INTRINSICS
+			#warning Using fallback support for RTM intrinsics.
+			#include "../javartm_rtm_intrin.h"
+		#else
+			#error RTM intrinsics support not found. GCC version >= 4.8 is needed for RTM support, or please compile with -DJAVARTM_RTM_INTRINSICS (see project documentation).
+		#endif
+	#else
+		#error RTM intrinsics support not found. Please compile with -mrtm.
+	#endif
 #endif
-#endif
-
-#ifdef __RTM__
 
 // Used to test cpuid support
 #include <x86intrin.h>
@@ -383,5 +386,3 @@ JNIEXPORT jobject JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env
 	if (!callMethodId) return NULL;
 	return (*env)->CallObjectMethod(env, fallbackBlock, callMethodId);
 }
-
-#endif // __RTM__
