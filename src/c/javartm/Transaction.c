@@ -389,10 +389,12 @@ JNIEXPORT void JNICALL Java_javartm_Transaction_abort__J(JNIEnv *env, jclass cls
 }
 
 JNIEXPORT jobject JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env, jclass cls, jobject atomicBlock, jobject fallbackBlock) {
-	// TODO: Add some caching
-	jclass atomicBlockClass = (*env)->GetObjectClass(env, atomicBlock);
-	jmethodID callMethodId = (*env)->GetMethodID(env, atomicBlockClass, "call", "()Ljava/lang/Object;");
-	if (!callMethodId) return NULL;
+	static jmethodID callMethodId = NULL;
+	if (callMethodId == NULL) {
+		jclass atomicBlockClass = (*env)->FindClass(env, "java/util/concurrent/Callable");
+		callMethodId = (*env)->GetMethodID(env, atomicBlockClass, "call", "()Ljava/lang/Object;");
+		if (!callMethodId) return NULL;
+	}
 
 	printf("Preparing execution...\n");
 	int res = _xbegin();
@@ -404,8 +406,5 @@ JNIEXPORT jobject JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env
 	}
 
 	printf("Abort or failed to start tx res = %d\n", res);
-	jclass fallbackBlockClass = (*env)->GetObjectClass(env, fallbackBlock);
-	callMethodId = (*env)->GetMethodID(env, fallbackBlockClass, "call", "()Ljava/lang/Object;");
-	if (!callMethodId) return NULL;
 	return (*env)->CallObjectMethod(env, fallbackBlock, callMethodId);
 }

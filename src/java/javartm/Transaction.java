@@ -21,7 +21,6 @@
 package javartm;
 
 import java.io.*;
-import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +88,7 @@ public final class Transaction {
 	 **/
 	public native static void abort(long reason);
 
-	public native static <V> V doTransactionally(Callable<V> atomicBlock, Callable<V> fallbackBlock);
+	//public native static <V> V doTransactionally(Callable<V> atomicBlock, Callable<V> fallbackBlock);
 
 	public static short getAbortReason(int txStatus) {
 		return (short) (txStatus >>> 24);

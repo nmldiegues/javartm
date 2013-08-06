@@ -20,8 +20,6 @@
 
 package javartm;
 
-import java.util.concurrent.Callable;
-
 public class Test {
 	public static int x = 0;
 	public static int y = 0;
@@ -31,7 +29,7 @@ public class Test {
 
 		// --
 
-		System.out.println("Trying to perform transaction (using doTransactionally)");
+		/*System.out.println("Trying to perform transaction (using doTransactionally)");
 
 		res = Transaction.doTransactionally(new Callable<Boolean>() {
 			public Boolean call() {
@@ -45,11 +43,11 @@ public class Test {
 			}
 		});
 
-		System.out.println("Transaction result: " + res + " (x: " + x + ", y: " + y + ")");
+		System.out.println("Transaction result: " + res + " (x: " + x + ", y: " + y + ")");*/
 
 		// --
 
-		System.out.println("Testing abort (using doTransactionally)");
+		/*System.out.println("Testing abort (using doTransactionally)");
 
 		res = Transaction.doTransactionally(new Callable<Boolean>() {
 			public Boolean call() {
@@ -63,7 +61,7 @@ public class Test {
 			}
 		});
 
-		System.out.println("Transaction result: " + res + " (x: " + x + ", y: " + y + ")");
+		System.out.println("Transaction result: " + res + " (x: " + x + ", y: " + y + ")");*/
 
 		// --
 
