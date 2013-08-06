@@ -47,7 +47,30 @@
 
 // Other stuff
 #include <stdio.h>
-// JNI note: When doing a FindClass/GetMethodId/... fails, we just have to return, as the JVM will automatically throw an exception due to the failure
+
+// JNI note: When doing a FindClass/GetMethodId/... fails, we just have to return, as the JVM will
+//	     automatically throw an exception due to the failure
+
+/**
+ * Debug logging using slf4j infrastructure
+ * See http://slf4j.org/apidocs/org/slf4j/Logger.html
+ * Available levels (in order): trace, debug, info, warn, error
+ **/
+int logMessage(JNIEnv *env, char *level, char *message) {
+	jclass javartmClass = (*env)->FindClass(env, "javartm/Transaction");
+	if (!javartmClass) return 0;
+	jfieldID logFieldId = (*env)->GetStaticFieldID(env, javartmClass, "Log", "Lorg/slf4j/Logger;");
+	if (!logFieldId) return 0;
+	jobject log = (*env)->GetStaticObjectField(env, javartmClass, logFieldId);
+	jclass loggerClass = (*env)->GetObjectClass(env, log);
+	jmethodID debugMethodId = (*env)->GetMethodID(env, loggerClass, level, "(Ljava/lang/String;)V");
+	if (!debugMethodId) return 0;
+	jobject messageString = (*env)->NewStringUTF(env, message);
+	(*env)->CallObjectMethod(env, log, debugMethodId, messageString);
+	return 1;
+}
+
+// ----------------------------------------------------------------------------
 
 JNIEXPORT jboolean JNICALL Java_javartm_Transaction_rtmAvailable(JNIEnv *env, jclass cls) {
 	unsigned int eax, ebx, ecx, edx;
