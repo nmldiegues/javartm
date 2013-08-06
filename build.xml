@@ -93,7 +93,7 @@
 				<attribute name="Implementation-Version" value="${dist.version}"/>
 			</manifest>
 
-			<fileset dir="${classes.dir}" excludes="**/Test*.class"/>
+			<fileset dir="${classes.dir}" excludes="**/*Test*.class"/>
 			<fileset dir="${jni.dir}" includes="**/*.so"/>
 		</jar>
 	</target>
