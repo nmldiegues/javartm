@@ -81,6 +81,7 @@ public class Test {
 
 		// --
 
+		System.out.println("----------");
 		System.out.println("Trying to commit without an active transaction...");
 		try {
 			Transaction.commit();
@@ -92,6 +93,7 @@ public class Test {
 
 		// --
 
+		System.out.println("----------");
 		System.out.println("Trying to abort without an active transaction...");
 		try {
 			Transaction.abort();
@@ -103,15 +105,19 @@ public class Test {
 
 		// --
 
+		System.out.println("----------");
 		System.out.println("Trying abort(0 -> 255)");
 		int statusZero = 0;
 		int retry = 0;
+		int capacity = 0;
 		for (int i = 0; i <= 255; i++) {
 			txStatus = Transaction.begin();
 			if (txStatus == Transaction.STARTED) {
 				Transaction.abort(i);
 			}
-			if (((txStatus & Transaction.ABORT_EXPLICIT) != 0) && (Transaction.getAbortReason(txStatus) != i)) {
+			if (txStatus == Transaction.ABORT_CAPACITY) {
+				capacity++;
+			} else if (((txStatus & Transaction.ABORT_EXPLICIT) != 0) && (Transaction.getAbortReason(txStatus) != i)) {
 				System.out.println("Unexpected txStatus for i: " + i + " txStatus: " + txStatus);
 			} else if (txStatus == 0) {
 				statusZero++;
@@ -121,11 +127,13 @@ public class Test {
 				System.out.println("Unexpected txStatus for i: " + i + " txStatus: " + txStatus + " (bit 0 unset)");
 			}
 		}
-		System.out.println("abort(0 -> 255) results: " + (255 - statusZero - retry) + " correct status codes; " +
-					statusZero + " times status == 0; " + retry + " may retry");
+		System.out.println("abort(0 -> 255) results: " + (255 - statusZero - retry - capacity) +
+				" correct status codes; " + statusZero + " times status == 0; " + retry +
+				" may retry; " + capacity + " capacity aborts");
 
 		// --
 
+		System.out.println("----------");
 		System.out.println("Finished testing!");
 	}
 }
