@@ -69,20 +69,21 @@ public final class Transaction {
 
 		if (!RTM_AVAILABLE) {
 			Log.warn("RTM not supported by current CPU. Attempting to use it may lead to JVM crashes");
+		} else {
+			// Warmup methods
+			// This is important because hotspot uses lazy dynamic linking, and otherwise we could
+			// be trying to trigger dynamic linking during a transacion
+			// Use -verbose:jni to enable logging of dynamic linking
+			// In the future maybe this could be replaced with calls to RegisterNatives
+			Log.trace("Warming up native methods");
+			inTransaction();
+			begin();
+			// the abort on the next line makes sure no transaction stays active after the begin
+			// above, even if the transactional buffer has a bigger capacity than usual
+			try { abort();  throw new Error("Should never happen"); } catch (IllegalStateException expected) { }
+			try { abort(0); throw new Error("Should never happen"); } catch (IllegalStateException expected) { }
+			try { commit(); throw new Error("Should never happen"); } catch (IllegalStateException expected) { }
 		}
-
-		// Warmup methods
-		// This is important because hotspot uses lazy dynamic linking, and otherwise we could
-		// be trying to trigger dynamic linking during a transacion
-		// Use -verbose:jni to enable logging of dynamic linking
-		// In the future maybe this could be replaced with calls to RegisterNatives
-		Log.trace("Warming up native methods");
-		inTransaction();
-		begin(); // the abort on the next line makes sure no transaction stays active, even if the
-			 // transactional buffer is bigger than normal
-		try { abort(); throw new Error("Unexpected"); } catch (IllegalStateException e) { } // expected
-		try { abort(0); throw new Error("Unexpected"); } catch (IllegalStateException e) { } // expected
-		try { commit(); throw new Error("Unexpected"); } catch (IllegalStateException e) { } // expected
 	}
 
 	/**
