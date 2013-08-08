@@ -28,6 +28,10 @@ import org.slf4j.LoggerFactory;
 public final class Transaction {
 	private static final Logger Log = LoggerFactory.getLogger(Transaction.class);
 
+	// Default JIT compiler threshold for current hotspot versions
+	// See also http://tinyurl.com/lgeabt3
+	private static final int HOTSPOT_JIT_THRESHOLD = 10000;
+
 	public static final int STARTED		= -1;
 
 	public static final int ABORT_EXPLICIT 	= 1 << 0;
@@ -71,18 +75,25 @@ public final class Transaction {
 			Log.warn("RTM not supported by current CPU. Attempting to use it may lead to JVM crashes");
 		} else {
 			// Warmup methods
-			// This is important because hotspot uses lazy dynamic linking, and otherwise we could
-			// be trying to trigger dynamic linking during a transacion
-			// Use -verbose:jni to enable logging of dynamic linking
-			// In the future maybe this could be replaced with calls to RegisterNatives
+			// This is important for two reasons:
+			// 1) Hotspot uses lazy dynamic linking, and otherwise we could be triggering dynamic
+			//    linking during a transaction. This can be seen by using -verbose:jni to enable
+			//    logging of dynamic linking operations.
+			// 2) By default, hotspot JIT-recompiles code at around 10k iterations, and trying
+			//    to JIT during a transaction can cause it to keep aborting.
 			Log.trace("Warming up native methods");
-			inTransaction();
-			begin();
-			// the abort on the next line makes sure no transaction stays active after the begin
-			// above, even if the transactional buffer has a bigger capacity than usual
-			try { abort();  throw new Error("Should never happen"); } catch (IllegalStateException expected) { }
-			try { abort(0); throw new Error("Should never happen"); } catch (IllegalStateException expected) { }
-			try { commit(); throw new Error("Should never happen"); } catch (IllegalStateException expected) { }
+			for (int i = 0; i < HOTSPOT_JIT_THRESHOLD * 1.1; i++) {
+				inTransaction();
+				begin();
+				// the abort on the next line makes sure no transaction stays active after the begin
+				// above, even if the transactional buffer has a bigger capacity than usual
+				try { abort();  throw new Error("Should never happen"); }
+					catch (IllegalStateException expected) { }
+				try { abort(0); throw new Error("Should never happen"); }
+					catch (IllegalStateException expected) { }
+				try { commit(); throw new Error("Should never happen"); }
+					catch (IllegalStateException expected) { }
+			}
 		}
 	}
 
