@@ -41,6 +41,9 @@
 #include <x86intrin.h>
 #include <cpuid.h>
 
+// Support for x86 pause instruction
+#include <xmmintrin.h>
+
 // Needed for JNI
 #include <jni.h>
 #include "javartm_Transaction.h"
@@ -85,8 +88,29 @@ JNIEXPORT jboolean JNICALL Java_javartm_Transaction_inTransaction(JNIEnv *env, j
 	return _xtest();
 }
 
+// Used as a maximum for the pause instructions; see comments on Java_javartm_Transaction_begin
+#define PAUSETIMES_LIMIT 64
+
 JNIEXPORT jint JNICALL Java_javartm_Transaction_begin(JNIEnv *env, jclass cls) {
-	return _xbegin();
+	int status;
+	int failtimes = 0;
+	while ((status = _xbegin()) == (_XABORT_RETRY | _XABORT_CONFLICT)) {
+		// When there are multiple processors fighting for the same memory zones,
+		// we get an abort with RETRY + CONFLICT flags set. For now, we use a simple
+		// backoff strategy, using the x86 pause instruction (which was introduced
+		// as a better means of doing backoff during spinlocks).
+		//
+		// Some open issues/notes on this approach:
+		// - Should we just give up after a while instead of eternally looping?
+		// - Should backoff be more agressive than linearly increasing failtimes?
+		// - What's the best value for the limit?
+		failtimes++;
+		for (int i = 0; i < failtimes; i++) {
+			_mm_pause(); _mm_pause(); _mm_pause(); _mm_pause(); _mm_pause();
+		}
+		failtimes = failtimes < PAUSETIMES_LIMIT ? failtimes : PAUSETIMES_LIMIT;
+	}
+	return status;
 }
 
 JNIEXPORT void JNICALL Java_javartm_Transaction_commit(JNIEnv *env, jclass cls) {
