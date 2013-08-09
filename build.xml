@@ -54,6 +54,7 @@
 		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnilib.file}">
 			<compilerarg value="-Wall"/>
 			<compilerarg value="-O2"/>
+			<compilerarg value="-std=c99"/>
 			<compilerarg value="-mrtm"/>
 			<fileset dir="${c.src.dir}" includes="**/*.c"/>
 			<includepath>
@@ -68,6 +69,7 @@
 		<mkdir dir="${jnioutput.dir}"/>
 		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnilib.file}">
 			<compilerarg value="-Wall"/>
+			<compilerarg value="-std=c99"/>
 			<compilerarg value="-O2"/>
 			<defineset define="JAVARTM_RTM_INTRINSICS"/>
 			<fileset dir="${c.src.dir}" includes="**/*.c"/>
