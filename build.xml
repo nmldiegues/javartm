@@ -44,11 +44,42 @@
 				<path path="${classes.dir}"/>
 			</classpath>
 			<class name="javartm.Transaction"/>
+			<class name="javartm.TestRtmSupport"/>
 		</javah>
 	</target>
 
 	<!-- cpptasks support -->
-	<target name="jni-compile" depends="jni-headers">
+	<target name="jni-compile-libtestrtmsupport" depends="jni-headers">
+		<taskdef resource="cpptasks.tasks"/>
+		<mkdir dir="${jnioutput.dir}"/>
+		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnioutput.dir}/testrtmsupport">
+			<compilerarg value="-Wall"/>
+			<compilerarg value="-O2"/>
+			<compilerarg value="-std=c99"/>
+			<fileset dir="${c.src.dir}" includes="**/TestRtmSupport.c"/>
+			<includepath>
+				<path path="${java.home}/../include"/>
+				<path path="${jni.dir}"/>
+			</includepath>
+		</cc>
+	</target>
+
+	<target name="jni-compile-libjavartm-dummy" depends="jni-headers">
+		<taskdef resource="cpptasks.tasks"/>
+		<mkdir dir="${jnioutput.dir}"/>
+		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnioutput.dir}/javartm-dummy">
+			<compilerarg value="-Wall"/>
+			<compilerarg value="-O2"/>
+			<compilerarg value="-std=c99"/>
+			<fileset dir="${c.src.dir}" includes="**/Transaction-dummy.c"/>
+			<includepath>
+				<path path="${java.home}/../include"/>
+				<path path="${jni.dir}"/>
+			</includepath>
+		</cc>
+	</target>
+
+	<target name="jni-compile-libjavartm" depends="jni-headers">
 		<taskdef resource="cpptasks.tasks"/>
 		<mkdir dir="${jnioutput.dir}"/>
 		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnilib.file}">
@@ -58,7 +89,9 @@
 			<compilerarg value="-mrtm"/>
 			<!-- we are going to be running on haswell at least, so why not take advantage of it -->
 			<compilerarg value="-march=core-avx2"/>
-			<fileset dir="${c.src.dir}" includes="**/*.c"/>
+			<fileset dir="${c.src.dir}"
+				includes="**/*.c"
+				excludes="**/TestRtmSupport.c **/Transaction-dummy.c"/>
 			<includepath>
 				<path path="${java.home}/../include"/>
 				<path path="${jni.dir}"/>
@@ -66,12 +99,12 @@
 		</cc>
 	</target>
 
-	<target name="oldgcc-jni-compile" depends="jni-headers">
+	<target name="oldgcc-jni-compile-javartm" depends="jni-headers">
 		<taskdef resource="cpptasks.tasks"/>
 		<mkdir dir="${jnioutput.dir}"/>
 		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnilib.file}">
 			<compilerarg value="-Wall"/>
-			<compilerarg value="-std=c99"/>
+			<compilerarg value="-std=gnu99"/>
 			<compilerarg value="-O2"/>
 			<!--
 			-march=core-avx-i is a bit less recent than -march=core-avx2, for older compilers;
@@ -79,13 +112,18 @@
 			-->
 			<compilerarg value="-march=core-avx-i"/>
 			<defineset define="JAVARTM_RTM_INTRINSICS"/>
-			<fileset dir="${c.src.dir}" includes="**/*.c"/>
+			<fileset dir="${c.src.dir}"
+				includes="**/*.c"
+				excludes="**/TestRtmSupport.c **/Transaction-dummy.c"/>
 			<includepath>
 				<path path="${java.home}/../include"/>
 				<path path="${jni.dir}"/>
 			</includepath>
 		</cc>
 	</target>
+
+	<target name="jni-compile" depends="jni-compile-libtestrtmsupport,jni-compile-libjavartm-dummy,jni-compile-libjavartm"/>
+	<target name="oldgcc-jni-compile" depends="jni-compile-libtestrtmsupport,jni-compile-libjavartm-dummy,oldgcc-jni-compile-javartm"/>
 
 	<target name="build" depends="clean,jni-compile" description="Builds javartm (java and native resources)"/>
 	<target name="oldgcc-build" depends="clean,oldgcc-jni-compile" description="Builds javartm (java and native resources) [GCC &lt; 4.8]"/>

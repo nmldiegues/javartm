@@ -37,10 +37,6 @@
 	#endif
 #endif
 
-// Used to test cpuid support
-#include <x86intrin.h>
-#include <cpuid.h>
-
 // Support for x86 pause instruction
 #include <xmmintrin.h>
 
@@ -74,15 +70,6 @@ int logMessage(JNIEnv *env, char *level, char *message) {
 }
 
 // ----------------------------------------------------------------------------
-
-JNIEXPORT jboolean JNICALL Java_javartm_Transaction_rtmAvailable(JNIEnv *env, jclass cls) {
-	unsigned int eax, ebx, ecx, edx;
-	if (__get_cpuid_max(0, NULL) >= 7) {
-		__cpuid_count(7, 0, eax, ebx, ecx, edx);
-		if (ebx & bit_RTM) return 1;
-	}
-	return 0;
-}
 
 JNIEXPORT jboolean JNICALL Java_javartm_Transaction_inTransaction(JNIEnv *env, jclass cls) {
 	return _xtest();

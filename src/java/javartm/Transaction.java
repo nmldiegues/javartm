@@ -25,6 +25,18 @@ import java.io.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+final class TestRtmSupport {
+	private static final Logger Log = LoggerFactory.getLogger(TestRtmSupport.class);
+
+	static {
+		// Bind native methods
+		Transaction.loadNativeLibrary("testrtmsupport");
+	}
+
+	private TestRtmSupport() { }
+	protected native static boolean rtmAvailable();
+}
+
 public final class Transaction {
 	private static final Logger Log = LoggerFactory.getLogger(Transaction.class);
 
@@ -41,17 +53,27 @@ public final class Transaction {
 	public static final int ABORT_DEBUG 	= 1 << 4;
 	public static final int ABORT_NESTED 	= 1 << 5;
 
-	public static final boolean RTM_AVAILABLE;
+	public static final boolean RTM_AVAILABLE = TestRtmSupport.rtmAvailable();
 
 	static {
+		if (!RTM_AVAILABLE) {
+			Log.info("RTM not supported by current CPU. Loading dummy library.");
+			loadNativeLibrary("javartm-dummy");
+		} else {
+			loadNativeLibrary("javartm");
+			warmup();
+		}
+	}
+
+	protected static void loadNativeLibrary(String libraryName) {
 		// Attempt to load native library from jar
-		InputStream libFile = Transaction.class.getResourceAsStream("libjavartm.so");
+		InputStream libFile = Transaction.class.getResourceAsStream("lib" + libraryName + ".so");
 		if (libFile != null) {
 			try {
 				// Native libraries *have* to be loaded from a file, so we
 				// create a temporary file, dump the native library from the
 				// jar, and then load it from there
-				File f = File.createTempFile("libjavartm", "so");
+				File f = File.createTempFile("lib" + libraryName, "so");
 				f.deleteOnExit();
 				FileOutputStream fos = new FileOutputStream(f);
 				int read;
@@ -65,42 +87,35 @@ public final class Transaction {
 				Log.warn("Exception trying to load native library", e);
 			}
 		} else {
-			// Embedded libjavartm.so not found, trying to load directly
-			System.loadLibrary("javartm");
-		}
-
-		RTM_AVAILABLE = rtmAvailable();
-
-		if (!RTM_AVAILABLE) {
-			Log.warn("RTM not supported by current CPU. Attempting to use it may lead to JVM crashes");
-		} else {
-			// Warmup methods
-			// This is important for two reasons:
-			// 1) Hotspot uses lazy dynamic linking, and otherwise we could be triggering dynamic
-			//    linking during a transaction. This can be seen by using -verbose:jni to enable
-			//    logging of dynamic linking operations.
-			// 2) By default, hotspot JIT-recompiles code at around 10k iterations, and trying
-			//    to JIT during a transaction can cause it to keep aborting.
-			Log.trace("Warming up native methods");
-			for (int i = 0; i < HOTSPOT_JIT_THRESHOLD * 1.1; i++) {
-				inTransaction();
-				begin();
-				// the abort on the next line makes sure no transaction stays active after the begin
-				// above, even if the transactional buffer has a bigger capacity than usual
-				try { abort();  throw new Error("Should never happen"); }
-					catch (IllegalStateException expected) { }
-				try { abort(0); throw new Error("Should never happen"); }
-					catch (IllegalStateException expected) { }
-				try { commit(); throw new Error("Should never happen"); }
-					catch (IllegalStateException expected) { }
-			}
+			// Embedded library not found, trying to load directly
+			System.loadLibrary(libraryName);
 		}
 	}
 
-	/**
-	 * Test CPU for RTM support.
-	 */
-	private native static boolean rtmAvailable();
+	private static void warmup() {
+		// Warmup methods
+		// This is important for two reasons:
+		// 1) Hotspot uses lazy dynamic linking, and otherwise we could be triggering dynamic
+		//    linking during a transaction. This can be seen by using -verbose:jni to enable
+		//    logging of dynamic linking operations.
+		// 2) By default, hotspot JIT-recompiles code at around 10k iterations, and trying
+		//    to JIT during a transaction can cause it to keep aborting.
+		Log.trace("Warming up methods");
+		for (int i = 0; i < HOTSPOT_JIT_THRESHOLD * 1.1; i++) {
+			inTransaction();
+			begin();
+			// the abort on the next line makes sure no transaction stays active after the begin
+			// above, even if the transactional buffer has a bigger capacity than usual
+			try { abort();  throw new Error("Should never happen"); }
+				catch (IllegalStateException expected) { }
+			try { abort(0); throw new Error("Should never happen"); }
+				catch (IllegalStateException expected) { }
+			try { commit(); throw new Error("Should never happen"); }
+				catch (IllegalStateException expected) { }
+		}
+	}
+
+	private Transaction() { }
 
 	public native static boolean inTransaction();
 	public native static int begin();
