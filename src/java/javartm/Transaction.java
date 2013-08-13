@@ -99,7 +99,8 @@ public final class Transaction {
 		//    -XX:+PrintCompilation may be used to verify which methods are being recompiled.
 		Log.trace("Warming up methods");
 
-		final Runnable dummyRunnable = new Runnable() { public void run() { } };
+		final AtomicRunnable<Void> dummyRunnable =
+			new AtomicRunnable<Void>() { @Override public Void run() { return null; } };
 
 		Warmup.doWarmup(new Runnable() { public void run() {
 			inTransaction();
@@ -135,13 +136,11 @@ public final class Transaction {
 	 **/
 	public native static void abort(long reason);
 
-	//public native static <V> V doTransactionally(Callable<V> atomicBlock, Callable<V> fallbackBlock);
-
-	public static boolean doTransactionally(Runnable r) {
+	public static <V> V doTransactionally(AtomicRunnable<V> r) {
 		return doTransactionally(r, false);
 	}
 
-	public native static boolean doTransactionally(Runnable r, boolean warmup);
+	public native static <V> V doTransactionally(AtomicRunnable<V> r, boolean warmup);
 
 	public static short getAbortReason(int txStatus) {
 		return (short) (txStatus >>> 24);

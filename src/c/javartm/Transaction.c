@@ -405,47 +405,24 @@ JNIEXPORT void JNICALL Java_javartm_Transaction_abort__J(JNIEnv *env, jclass cls
 	}
 }
 
-/*
-JNIEXPORT jobject JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env, jclass cls, jobject atomicBlock, jobject fallbackBlock) {
-	static jmethodID callMethodId = NULL;
-	if (callMethodId == NULL) {
-		jclass atomicBlockClass = (*env)->FindClass(env, "java/util/concurrent/Callable");
-		callMethodId = (*env)->GetMethodID(env, atomicBlockClass, "call", "()Ljava/lang/Object;");
-		if (!callMethodId) return NULL;
-	}
-
-	printf("Preparing execution...\n");
-	int res = _xbegin();
-	if (_xtest()) {
-		jobject retValue = (*env)->CallObjectMethod(env, atomicBlock, callMethodId);
-		_xend();
-		printf("Successful commit\n");
-		return retValue;
-	}
-
-	printf("Abort or failed to start tx res = %d\n", res);
-	return (*env)->CallObjectMethod(env, fallbackBlock, callMethodId);
-}
-*/
-
 // How many times failed transactions inside doTransactionally are retried
 // 10 was enough to hit at least 99.999% with most tests
 #define RETRIES 10
 
-JNIEXPORT jboolean JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env, jclass cls, jobject runnable, jboolean warmup) {
+JNIEXPORT jobject JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env, jclass cls, jobject runnable, jboolean warmup) {
 	static jmethodID runMethodId = NULL;
 	if (runMethodId == NULL) {
-		jclass atomicBlockClass = (*env)->FindClass(env, "java/lang/Runnable");
-		runMethodId = (*env)->GetMethodID(env, atomicBlockClass, "run", "()V");
-		if (!runMethodId) return 0;
+		jclass atomicBlockClass = (*env)->FindClass(env, "javartm/AtomicRunnable");
+		runMethodId = (*env)->GetMethodID(env, atomicBlockClass, "run", "()Ljava/lang/Object;");
+		if (!runMethodId) return NULL;
 	}
 
 	for (int i = 0; i < RETRIES; i++) {
 		if (warmup || (begin() == _XBEGIN_STARTED)) {
-			(*env)->CallVoidMethod(env, runnable, runMethodId);
+			jobject retValue = (*env)->CallObjectMethod(env, runnable, runMethodId);
 			if (!warmup) _xend();
-			return 1;
+			return retValue;
 		}
 	}
-	return 0;
+	return NULL;
 }

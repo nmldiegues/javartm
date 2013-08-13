@@ -28,8 +28,9 @@ public final class Test6 {
 	public static void main(String[] args) throws Throwable {
 		final int ITERS = 5000000;
 
-		final Runnable transaction = new Runnable() {
-			public void run() {
+		final AtomicRunnable<Void> transaction = new AtomicRunnable<Void>() {
+			@Override
+			public Void run() {
 				// The simpler warmup just returns with this test, but then the dummy method
 				// call will never work
 				//if (!Transaction.inTransaction()) return;
@@ -37,12 +38,16 @@ public final class Test6 {
 				y++;
 				z++;
 				dummy();
+				return null;
+			}
+
+			@Override
+			public void afterWarmup() {
+				x = 0; y = 0; z = 0;
 			}
 		};
 
 		Warmup.doWarmup(transaction);
-
-		x = 0; y = 0; z = 0;
 
 		Thread[] threads = new Thread[Runtime.getRuntime().availableProcessors()];
 

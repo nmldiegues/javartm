@@ -33,9 +33,20 @@ public class Warmup {
 	// In some cases, the value above is not enough, so let's arbitrarily do a bit more
 	private static final int ITERATIONS = HOTSPOT_JIT_THRESHOLD * 3;
 
-	/** Warmups up the received runnable by calling it repeatedly until the VM JIT kicks in **/
+	/** Warms up the received runnable by calling it repeatedly until the VM JIT kicks in **/
 	public static void doWarmup(Runnable r) {
 		for (int i = 0; i < ITERATIONS; i++) r.run();
+		try {
+			Thread.sleep(10);
+		} catch (InterruptedException e) { throw new RuntimeException(e); }
+		Log.info("Warmup for " + r.getClass().getName() + " complete");
+	}
+
+	/** Warms up the received runnable by calling it repeatedly until the VM JIT kicks in **/
+	public static void doWarmup(AtomicRunnable<?> r) {
+		r.beforeWarmup();
+		for (int i = 0; i < ITERATIONS; i++) r.run();
+		r.afterWarmup();
 		try {
 			Thread.sleep(10);
 		} catch (InterruptedException e) { throw new RuntimeException(e); }
