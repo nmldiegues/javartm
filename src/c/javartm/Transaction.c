@@ -75,7 +75,7 @@ JNIEXPORT jboolean JNICALL Java_javartm_Transaction_inTransaction(JNIEnv *env, j
 	return _xtest();
 }
 
-// Used as a maximum for the pause instructions; see comments on Java_javartm_Transaction_begin
+// Used as a maximum for the pause instructions; see comments on begin()
 #define PAUSETIMES_LIMIT 64
 
 // Begin is used in multiple methods, but we force it to be inlined to avoid extra work after
@@ -428,16 +428,24 @@ JNIEXPORT jobject JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env
 }
 */
 
-JNIEXPORT void JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env, jclass cls, jobject runnable, jboolean warmup) {
+// How many times failed transactions inside doTransactionally are retried
+// 10 was enough to hit at least 99.999% with most tests
+#define RETRIES 10
+
+JNIEXPORT jboolean JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env, jclass cls, jobject runnable, jboolean warmup) {
 	static jmethodID runMethodId = NULL;
 	if (runMethodId == NULL) {
 		jclass atomicBlockClass = (*env)->FindClass(env, "java/lang/Runnable");
 		runMethodId = (*env)->GetMethodID(env, atomicBlockClass, "run", "()V");
-		if (!runMethodId) return;
+		if (!runMethodId) return 0;
 	}
 
-	if (warmup || (begin() == _XBEGIN_STARTED)) {
-		(*env)->CallVoidMethod(env, runnable, runMethodId);
-		if (!warmup) _xend();
+	for (int i = 0; i < RETRIES; i++) {
+		if (warmup || (begin() == _XBEGIN_STARTED)) {
+			(*env)->CallVoidMethod(env, runnable, runMethodId);
+			if (!warmup) _xend();
+			return 1;
+		}
 	}
+	return 0;
 }

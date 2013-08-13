@@ -137,11 +137,11 @@ public final class Transaction {
 
 	//public native static <V> V doTransactionally(Callable<V> atomicBlock, Callable<V> fallbackBlock);
 
-	public static void doTransactionally(Runnable r) {
-		doTransactionally(r, false);
+	public static boolean doTransactionally(Runnable r) {
+		return doTransactionally(r, false);
 	}
 
-	public native static void doTransactionally(Runnable r, boolean warmup);
+	public native static boolean doTransactionally(Runnable r, boolean warmup);
 
 	public static short getAbortReason(int txStatus) {
 		return (short) (txStatus >>> 24);
