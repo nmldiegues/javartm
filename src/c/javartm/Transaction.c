@@ -78,7 +78,9 @@ JNIEXPORT jboolean JNICALL Java_javartm_Transaction_inTransaction(JNIEnv *env, j
 // Used as a maximum for the pause instructions; see comments on Java_javartm_Transaction_begin
 #define PAUSETIMES_LIMIT 64
 
-JNIEXPORT jint JNICALL Java_javartm_Transaction_begin(JNIEnv *env, jclass cls) {
+// Begin is used in multiple methods, but we force it to be inlined to avoid extra work after
+// the transaction is started
+__attribute__((always_inline)) inline int begin() {
 	int status;
 	int failtimes = 0;
 	while ((status = _xbegin()) == (_XABORT_RETRY | _XABORT_CONFLICT)) {
@@ -98,6 +100,10 @@ JNIEXPORT jint JNICALL Java_javartm_Transaction_begin(JNIEnv *env, jclass cls) {
 		failtimes = failtimes < PAUSETIMES_LIMIT ? failtimes : PAUSETIMES_LIMIT;
 	}
 	return status;
+}
+
+JNIEXPORT jint JNICALL Java_javartm_Transaction_begin(JNIEnv *env, jclass cls) {
+	return begin();
 }
 
 JNIEXPORT void JNICALL Java_javartm_Transaction_commit(JNIEnv *env, jclass cls) {
@@ -399,6 +405,7 @@ JNIEXPORT void JNICALL Java_javartm_Transaction_abort__J(JNIEnv *env, jclass cls
 	}
 }
 
+/*
 JNIEXPORT jobject JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env, jclass cls, jobject atomicBlock, jobject fallbackBlock) {
 	static jmethodID callMethodId = NULL;
 	if (callMethodId == NULL) {
@@ -418,4 +425,19 @@ JNIEXPORT jobject JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env
 
 	printf("Abort or failed to start tx res = %d\n", res);
 	return (*env)->CallObjectMethod(env, fallbackBlock, callMethodId);
+}
+*/
+
+JNIEXPORT void JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env, jclass cls, jobject runnable, jboolean warmup) {
+	static jmethodID runMethodId = NULL;
+	if (runMethodId == NULL) {
+		jclass atomicBlockClass = (*env)->FindClass(env, "java/lang/Runnable");
+		runMethodId = (*env)->GetMethodID(env, atomicBlockClass, "run", "()V");
+		if (!runMethodId) return;
+	}
+
+	if (warmup || (begin() == _XBEGIN_STARTED)) {
+		(*env)->CallVoidMethod(env, runnable, runMethodId);
+		if (!warmup) _xend();
+	}
 }

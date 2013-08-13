@@ -20,35 +20,25 @@
 
 package javartm;
 
-public final class Test2 {
-	public static int x, y, z;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-	public static void simpleTx() {
-		if (Transaction.begin() == Transaction.STARTED) {
-			x = 2;
-			y = 2;
-			z = 2;
-			dummy();
-			Transaction.commit();
-		}
-	}
+public class Warmup {
+	private static final Logger Log = LoggerFactory.getLogger(Warmup.class);
 
-	public static void dummy() { }
+	// Default JIT compiler threshold for current hotspot versions
+	// See also http://tinyurl.com/lgeabt3
+	private static final int HOTSPOT_JIT_THRESHOLD = 10000;
 
-	public static void main(String[] args) {
-		Warmup.doWarmup(new Runnable() { public void run() {
-			dummy();
-		}});
+	// In some cases, the value above is not enough, so let's arbitrarily do a bit more
+	private static final int ITERATIONS = HOTSPOT_JIT_THRESHOLD * 3;
 
-		long iters = 0;
-		while (x == 0) {
-			iters++;
-			simpleTx();
-			if (iters == 1000000) {
-				System.out.println("Given up after " + iters + " iterations");
-				return;
-			}
-		}
-		System.out.println("Transaction succeeded after " + iters + " iters (" + x + ", " + y + ", " + z + ")");
+	/** Warmups up the received runnable by calling it repeatedly until the VM JIT kicks in **/
+	public static void doWarmup(Runnable r) {
+		for (int i = 0; i < ITERATIONS; i++) r.run();
+		try {
+			Thread.sleep(10);
+		} catch (InterruptedException e) { throw new RuntimeException(e); }
+		Log.info("Warmup for " + r.getClass().getName() + " complete");
 	}
 }

@@ -40,10 +40,6 @@ final class TestRtmSupport {
 public final class Transaction {
 	private static final Logger Log = LoggerFactory.getLogger(Transaction.class);
 
-	// Default JIT compiler threshold for current hotspot versions
-	// See also http://tinyurl.com/lgeabt3
-	private static final int HOTSPOT_JIT_THRESHOLD = 10000;
-
 	public static final int STARTED		= -1;
 
 	public static final int ABORT_EXPLICIT 	= 1 << 0;
@@ -99,9 +95,13 @@ public final class Transaction {
 		//    linking during a transaction. This can be seen by using -verbose:jni to enable
 		//    logging of dynamic linking operations.
 		// 2) By default, hotspot JIT-recompiles code at around 10k iterations, and trying
-		//    to JIT during a transaction can cause it to keep aborting.
+		//    to JIT during a transaction can cause it to keep aborting. The flag
+		//    -XX:+PrintCompilation may be used to verify which methods are being recompiled.
 		Log.trace("Warming up methods");
-		for (int i = 0; i < HOTSPOT_JIT_THRESHOLD * 1.1; i++) {
+
+		final Runnable dummyRunnable = new Runnable() { public void run() { } };
+
+		Warmup.doWarmup(new Runnable() { public void run() {
 			inTransaction();
 			begin();
 			// the abort on the next line makes sure no transaction stays active after the begin
@@ -112,7 +112,14 @@ public final class Transaction {
 				catch (IllegalStateException expected) { }
 			try { commit(); throw new Error("Should never happen"); }
 				catch (IllegalStateException expected) { }
-		}
+			doTransactionally(dummyRunnable, true);
+		}});
+
+		Warmup.doWarmup(new Runnable() { public void run() {
+			doTransactionally(dummyRunnable);
+		}});
+
+		Log.info("initialization complete");
 	}
 
 	private Transaction() { }
@@ -129,6 +136,12 @@ public final class Transaction {
 	public native static void abort(long reason);
 
 	//public native static <V> V doTransactionally(Callable<V> atomicBlock, Callable<V> fallbackBlock);
+
+	public static void doTransactionally(Runnable r) {
+		doTransactionally(r, false);
+	}
+
+	public native static void doTransactionally(Runnable r, boolean warmup);
 
 	public static short getAbortReason(int txStatus) {
 		return (short) (txStatus >>> 24);
