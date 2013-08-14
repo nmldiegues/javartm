@@ -29,4 +29,8 @@ public abstract class AtomicRunnable<V> {
 	protected void afterWarmup() { }
 
 	public abstract V run();
+
+	public final void warmup() {
+		Warmup.doWarmup(this);
+	}
 }
