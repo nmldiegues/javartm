@@ -20,7 +20,9 @@
 
 package javartm.tests;
 
+import javartm.AtomicRunnable;
 import javartm.Transaction;
+import javartm.Warmup;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,8 +53,24 @@ public class TransactionTest1 {
 		if (Transaction.begin() == Transaction.STARTED) {
 			inTransaction = Transaction.inTransaction();
 			Transaction.commit();
+			Assert.assertTrue(inTransaction);
+		} else {
+			Assert.assertFalse(inTransaction);
 		}
-		Assert.assertTrue(inTransaction);
+		Assert.assertFalse(Transaction.inTransaction());
+	}
+
+	@Test
+	public void testDoTransactionally() {
+		AtomicRunnable<Boolean> transaction = new AtomicRunnable<Boolean>() {
+			@Override
+			public Boolean run() {
+				return true;
+			}
+		};
+		Warmup.doWarmup(transaction);
+		Boolean result = Transaction.doTransactionally(transaction);
+		Assert.assertTrue(result);
 	}
 
 }
