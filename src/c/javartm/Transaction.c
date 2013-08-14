@@ -425,11 +425,13 @@ JNIEXPORT jobject JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env
 	}
 
 	for (int i = 0; i < RETRIES; i++) {
-		if (warmup || (begin() == _XBEGIN_STARTED)) {
+		int status = 0;
+		if (warmup || ((status = begin()) == _XBEGIN_STARTED)) {
 			jobject retValue = (*env)->CallObjectMethod(env, runnable, runMethodId);
 			if (!warmup) _xend();
 			return retValue;
 		}
+		if (status & _XABORT_EXPLICIT) break;
 	}
 	return NULL;
 }
