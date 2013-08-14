@@ -56,3 +56,8 @@ JNIEXPORT void JNICALL Java_javartm_Transaction_abort__(JNIEnv *env, jclass cls)
 JNIEXPORT void JNICALL Java_javartm_Transaction_abort__J(JNIEnv *env, jclass cls, jlong reason) {
 	throwException(env);
 }
+
+JNIEXPORT jobject JNICALL Java_javartm_Transaction_doTransactionally(JNIEnv *env, jclass cls, jobject runnable, jboolean warmup) {
+	throwException(env);
+	return NULL;
+}
