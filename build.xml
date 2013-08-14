@@ -48,9 +48,8 @@
 		</javah>
 	</target>
 
-	<!-- cpptasks support -->
 	<target name="jni-compile-libtestrtmsupport" depends="jni-headers">
-		<taskdef resource="cpptasks.tasks"/>
+		<taskdef resource="cpptasks.tasks"/> <!-- import cpptasks -->
 		<mkdir dir="${jnioutput.dir}"/>
 		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnioutput.dir}/testrtmsupport">
 			<compilerarg value="-Wall"/>
@@ -65,7 +64,7 @@
 	</target>
 
 	<target name="jni-compile-libjavartm-dummy" depends="jni-headers">
-		<taskdef resource="cpptasks.tasks"/>
+		<taskdef resource="cpptasks.tasks"/> <!-- import cpptasks -->
 		<mkdir dir="${jnioutput.dir}"/>
 		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnioutput.dir}/javartm-dummy">
 			<compilerarg value="-Wall"/>
@@ -80,55 +79,77 @@
 	</target>
 
 	<target name="jni-compile-libjavartm" depends="jni-headers">
-		<taskdef resource="cpptasks.tasks"/>
+		<taskdef resource="cpptasks.tasks"/> <!-- import cpptasks -->
+		<taskdef resource="net/sf/antcontrib/antlib.xml"/> <!-- import ant-contrib -->
 		<mkdir dir="${jnioutput.dir}"/>
-		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnilib.file}">
-			<compilerarg value="-Wall"/>
-			<compilerarg value="-O2"/>
-			<compilerarg value="-std=c99"/>
-			<compilerarg value="-mrtm"/>
-			<!-- we are going to be running on haswell at least, so why not take advantage of it -->
-			<compilerarg value="-march=core-avx2"/>
-			<fileset dir="${c.src.dir}"
-				includes="**/*.c"
-				excludes="**/TestRtmSupport.c **/Transaction-dummy.c"/>
-			<includepath>
-				<path path="${java.home}/../include"/>
-				<path path="${jni.dir}"/>
-			</includepath>
-		</cc>
-	</target>
-
-	<target name="oldgcc-jni-compile-javartm" depends="jni-headers">
-		<taskdef resource="cpptasks.tasks"/>
-		<mkdir dir="${jnioutput.dir}"/>
-		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnilib.file}">
-			<compilerarg value="-Wall"/>
-			<compilerarg value="-std=gnu99"/>
-			<compilerarg value="-O2"/>
-			<!--
-			-march=core-avx-i is a bit less recent than -march=core-avx2, for older compilers;
-			see also http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html
-			-->
-			<compilerarg value="-march=core-avx-i"/>
-			<defineset define="JAVARTM_RTM_INTRINSICS"/>
-			<fileset dir="${c.src.dir}"
-				includes="**/*.c"
-				excludes="**/TestRtmSupport.c **/Transaction-dummy.c"/>
-			<includepath>
-				<path path="${java.home}/../include"/>
-				<path path="${jni.dir}"/>
-			</includepath>
-		</cc>
+		<trycatch>
+			<try>
+				<!-- Try first to compile with gcc rtm intrinsics -->
+				<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnilib.file}">
+					<compilerarg value="-Wall"/>
+					<compilerarg value="-O2"/>
+					<compilerarg value="-std=c99"/>
+					<compilerarg value="-mrtm"/>
+					<!-- we are going to be running on haswell at least, so why not take advantage of it -->
+					<compilerarg value="-march=core-avx2"/>
+					<fileset dir="${c.src.dir}"
+						includes="**/*.c"
+						excludes="**/TestRtmSupport.c **/Transaction-dummy.c"/>
+					<includepath>
+						<path path="${java.home}/../include"/>
+						<path path="${jni.dir}"/>
+					</includepath>
+				</cc>
+			</try>
+			<catch>
+				<echo>Compile failed possibly due to -mrtm error, falling back to built-in rtm instrinsics</echo>
+				<trycatch>
+					<try>
+						<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnilib.file}">
+							<compilerarg value="-Wall"/>
+							<compilerarg value="-std=gnu99"/>
+							<compilerarg value="-O2"/>
+							<!--
+							-march=core-avx-i is a bit less recent than -march=core-avx2, for older compilers;
+							see also http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html
+							-->
+							<compilerarg value="-march=core-avx-i"/>
+							<defineset define="JAVARTM_RTM_INTRINSICS"/>
+							<fileset dir="${c.src.dir}"
+								includes="**/*.c"
+								excludes="**/TestRtmSupport.c **/Transaction-dummy.c"/>
+							<includepath>
+								<path path="${java.home}/../include"/>
+								<path path="${jni.dir}"/>
+							</includepath>
+						</cc>
+					</try>
+					<catch>
+						<echo>Compile failed possibly due to -march settings error, final try without explicit -march</echo>
+						<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnilib.file}">
+							<compilerarg value="-Wall"/>
+							<compilerarg value="-std=gnu99"/>
+							<compilerarg value="-O2"/>
+							<defineset define="JAVARTM_RTM_INTRINSICS"/>
+							<fileset dir="${c.src.dir}"
+								includes="**/*.c"
+								excludes="**/TestRtmSupport.c **/Transaction-dummy.c"/>
+							<includepath>
+								<path path="${java.home}/../include"/>
+								<path path="${jni.dir}"/>
+							</includepath>
+						</cc>
+					</catch>
+				</trycatch>
+			</catch>
+		</trycatch>
 	</target>
 
 	<target name="jni-compile" depends="jni-compile-libtestrtmsupport,jni-compile-libjavartm-dummy,jni-compile-libjavartm"/>
-	<target name="oldgcc-jni-compile" depends="jni-compile-libtestrtmsupport,jni-compile-libjavartm-dummy,oldgcc-jni-compile-javartm"/>
 
-	<target name="build" depends="clean,jni-compile" description="Builds javartm (java and native resources)"/>
-	<target name="oldgcc-build" depends="clean,oldgcc-jni-compile" description="Builds javartm (java and native resources) [GCC &lt; 4.8]"/>
+	<target name="build" depends="clean,java-compile,jni-compile" description="Builds javartm (java and native resources)"/>
 
-	<target name="generate-jar">
+	<target name="jar" depends="build" description="Generates the javartm jar">
 		<mkdir dir="${dist.dir}"/>
 		<jar destfile="${jar.file}">
 			<manifest>
@@ -144,11 +165,8 @@
 			<fileset dir="${jni.dir}" includes="**/*.so"/>
 		</jar>
 	</target>
-	
-	<target name="jar" depends="build,generate-jar" description="Generates the javartm jar"/>
-	<target name="oldgcc-jar" depends="oldgcc-build,generate-jar" description="Generates the javartm jar [GCC &lt; 4.8]"/>
 
-	<target name="generate-fat-jar">
+	<target name="fat-jar" depends="jar" description="Generates a fat javartm jar including all dependencies">
 		<jar destfile="${jarfat.file}">
 			<manifest>
 				<!-- Who is building this jar? -->
@@ -168,9 +186,7 @@
 		</jar>
 	</target>
 
-	<target name="fat-jar" depends="jar" description="Generates a fat javartm jar including all dependencies"/>
-	<target name="oldgcc-fat-jar" depends="oldgcc-jar" description="Generates a fat javartm jar including all dependencies [GCC &lt; 4.8]"/>
-
+       <!-- Targets for running tests -->
 	<target name="test-rtm" description="Runs tests (requires hardware *WITH* RTM support)">
 		<junit printsummary="yes" haltonfailure="yes">
 			<formatter type="plain" usefile="false"/>
@@ -205,5 +221,5 @@
 	<target name="main" depends="build"/>
 	<target name="compile" depends="build"/>
 	<target name="clean-all" depends="clean"/>
-	<!--<target name="dist" depends="jar"/>-->
+	<target name="dist" depends="jar"/>
 </project>
