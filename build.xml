@@ -16,6 +16,20 @@
 	<property name="jar.file" value="${dist.dir}/${jar.filename}"/>
 	<property name="jarfat.file" value="${dist.dir}/javartm-fat-${dist.version}.jar"/>
 
+	<property name="antjars.dir" value="antlib"/>
+	<property name="ant-contrib.file" value="${antjars.dir}/ant-contrib-1.0b5-SNAPSHOT.jar"/>
+	<property name="ant-cpptasks.file" value="${antjars.dir}/ant-contrib-cpptasks-1.0~b5.jar"/>
+
+	<!-- import ant-contrib -->
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath><pathelement location="${ant-contrib.file}"/></classpath>
+	</taskdef>
+
+	<!-- import ant-cpptasks -->
+	<taskdef resource="cpptasks.tasks">
+		<classpath><pathelement location="${ant-cpptasks.file}"/></classpath>
+	</taskdef>
+
 	<path id="jars-classpath">
 		<fileset dir="${jars.dir}" >
 			<include name="*.jar"/>
@@ -49,7 +63,6 @@
 	</target>
 
 	<target name="jni-compile-libtestrtmsupport" depends="jni-headers">
-		<taskdef resource="cpptasks.tasks"/> <!-- import cpptasks -->
 		<mkdir dir="${jnioutput.dir}"/>
 		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnioutput.dir}/testrtmsupport">
 			<compilerarg value="-Wall"/>
@@ -64,7 +77,6 @@
 	</target>
 
 	<target name="jni-compile-libjavartm-dummy" depends="jni-headers">
-		<taskdef resource="cpptasks.tasks"/> <!-- import cpptasks -->
 		<mkdir dir="${jnioutput.dir}"/>
 		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnioutput.dir}/javartm-dummy">
 			<compilerarg value="-Wall"/>
@@ -79,8 +91,6 @@
 	</target>
 
 	<target name="jni-compile-libjavartm" depends="jni-headers">
-		<taskdef resource="cpptasks.tasks"/> <!-- import cpptasks -->
-		<taskdef resource="net/sf/antcontrib/antlib.xml"/> <!-- import ant-contrib -->
 		<mkdir dir="${jnioutput.dir}"/>
 		<trycatch>
 			<try>
