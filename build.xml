@@ -30,6 +30,11 @@
 		<classpath><pathelement location="${ant-cpptasks.file}"/></classpath>
 	</taskdef>
 
+	<!-- platform conditions, used for conditional includes -->
+	<condition property="isLinux">
+		<os name="Linux"/>
+	</condition>
+
 	<path id="jars-classpath">
 		<fileset dir="${jars.dir}" >
 			<include name="*.jar"/>
@@ -73,6 +78,9 @@
 				<path path="${java.home}/../include"/>
 				<path path="${jni.dir}"/>
 			</includepath>
+			<includepath if="isLinux">
+				<path path="${java.home}/../include/linux"/>
+			</includepath>
 		</cc>
 	</target>
 
@@ -86,6 +94,9 @@
 			<includepath>
 				<path path="${java.home}/../include"/>
 				<path path="${jni.dir}"/>
+			</includepath>
+			<includepath if="isLinux">
+				<path path="${java.home}/../include/linux"/>
 			</includepath>
 		</cc>
 	</target>
@@ -108,6 +119,9 @@
 					<includepath>
 						<path path="${java.home}/../include"/>
 						<path path="${jni.dir}"/>
+					</includepath>
+					<includepath if="isLinux">
+						<path path="${java.home}/../include/linux"/>
 					</includepath>
 				</cc>
 			</try>
@@ -132,6 +146,9 @@
 								<path path="${java.home}/../include"/>
 								<path path="${jni.dir}"/>
 							</includepath>
+							<includepath if="isLinux">
+								<path path="${java.home}/../include/linux"/>
+							</includepath>
 						</cc>
 					</try>
 					<catch>
@@ -147,6 +164,9 @@
 							<includepath>
 								<path path="${java.home}/../include"/>
 								<path path="${jni.dir}"/>
+							</includepath>
+							<includepath if="isLinux">
+								<path path="${java.home}/../include/linux"/>
 							</includepath>
 						</cc>
 					</catch>
