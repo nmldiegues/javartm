@@ -27,6 +27,11 @@
 
 #include <stdint.h>
 
+#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#if GCC_VERSION < 40500
+	#warning GCC version >= 4.5 is needed for asm goto support, build will probably fail, see gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html .
+#endif
+
 #define __XBEGIN(label) \
 	asm volatile goto(".byte 0xc7,0xf8 ; .long %l0-1f\n1:" ::: "eax","memory" : label)
 #define __XFAIL_STATUS(label, status) \
