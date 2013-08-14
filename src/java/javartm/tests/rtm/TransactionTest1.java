@@ -73,4 +73,35 @@ public class TransactionTest1 {
 		Assert.assertTrue(result);
 	}
 
+	@Test
+	public void testExplicitAbort() {
+		int status = Transaction.begin();
+		if (status == Transaction.STARTED) {
+			Transaction.abort();
+		} else {
+			if (status == 0) {
+				testExplicitAbort();
+				return;
+			}
+			Assert.assertEquals(status, 1);
+		}
+	}
+
+	@Test
+	public void testExplicitAbort2() {
+		for (int i = 0; i <= 255; i++) {
+			int txStatus = Transaction.begin();
+			if (txStatus == Transaction.STARTED) {
+				Transaction.abort(i);
+			} else {
+				if ((txStatus & 1) == 0) {
+					// Something went wrong, retry
+					i--;
+					continue;
+				}
+				Assert.assertEquals(Transaction.getAbortReason(txStatus), i);
+			}
+		}
+	}
+
 }
