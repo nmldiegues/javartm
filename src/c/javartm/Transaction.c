@@ -130,9 +130,16 @@ JNIEXPORT void JNICALL Java_javartm_Transaction_abort__(JNIEnv *env, jclass cls)
 	}
 }
 
-JNIEXPORT void JNICALL Java_javartm_Transaction_abort__J(JNIEnv *env, jclass cls, jlong reason) {
-	// I don't know why (register clobbering? bug?), but if reason is 32bits, then the returned
-	// result after _xabort is always 0. Having reason as a long seems to work, don't know why.
+// FIXME: I'm completely lost here. I suspect abort(status) seems to have some kind of alignment issue or
+// something else, because if you comment out the following never-used code you get something like the
+// following on javartm.Test:
+// abort(0 -> 255) results: 41 correct status codes; 214 times status == 0; 0 may retry; 0 capacity aborts
+// enabling it normally yields:
+// abort(0 -> 255) results: 255 correct status codes; 0 times status == 0; 0 may retry; 0 capacity aborts
+// Why? I don't have the faintest clue. Feel free to poke around for yourself.
+void FIXME_HACK() { printf("."); }
+
+JNIEXPORT void JNICALL Java_javartm_Transaction_abort__I(JNIEnv *env, jclass cls, jint reason) {
 	if (_xtest()) {
 		// Supposedly the argument to _xabort must be encoded into the instruction.
 		// To allow the user to specify his reason we must have an xabort for each value.

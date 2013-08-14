@@ -134,7 +134,7 @@ public final class Transaction {
 	 * Abort and set returned status code.
 	 * Note that reason MUST FIT as unsigned 8bits [0,255], otherwise it will be set to 0.
 	 **/
-	public native static void abort(long reason);
+	public native static void abort(int reason);
 
 	public static <V> V doTransactionally(AtomicRunnable<V> r) {
 		return doTransactionally(r, false);
@@ -143,6 +143,7 @@ public final class Transaction {
 	private native static <V> V doTransactionally(AtomicRunnable<V> r, boolean warmup);
 
 	public static short getAbortReason(int txStatus) {
+		if ((txStatus & ABORT_EXPLICIT) == 0) return -1;
 		return (short) (txStatus >>> 24);
 	}
 }
