@@ -140,7 +140,7 @@ public final class Transaction {
 		return doTransactionally(r, false);
 	}
 
-	public native static <V> V doTransactionally(AtomicRunnable<V> r, boolean warmup);
+	private native static <V> V doTransactionally(AtomicRunnable<V> r, boolean warmup);
 
 	public static short getAbortReason(int txStatus) {
 		return (short) (txStatus >>> 24);
