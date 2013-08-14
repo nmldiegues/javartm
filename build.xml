@@ -171,6 +171,36 @@
 	<target name="fat-jar" depends="jar" description="Generates a fat javartm jar including all dependencies"/>
 	<target name="oldgcc-fat-jar" depends="oldgcc-jar" description="Generates a fat javartm jar including all dependencies [GCC &lt; 4.8]"/>
 
+	<target name="test-rtm" description="Runs tests (requires hardware *WITH* RTM support)">
+		<junit printsummary="yes" haltonfailure="yes">
+			<formatter type="plain" usefile="false"/>
+			<classpath>
+				<path refid="jars-classpath"/>
+				<path path="${classes.dir}"/>
+			</classpath>
+			<batchtest fork="yes">
+				<fileset dir="${java.src.dir}">
+					<include name="**/rtm/*Test*.java"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="test-nortm" description="Runs tests (requires hardware *WITHOUT* RTM support)">
+		<junit printsummary="yes" haltonfailure="yes">
+			<formatter type="plain" usefile="false"/>
+			<classpath>
+				<path refid="jars-classpath"/>
+				<path path="${classes.dir}"/>
+			</classpath>
+			<batchtest fork="yes">
+				<fileset dir="${java.src.dir}">
+					<include name="**/nortm/*Test*.java"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
 	<!-- aliases -->
 	<target name="main" depends="build"/>
 	<target name="compile" depends="build"/>

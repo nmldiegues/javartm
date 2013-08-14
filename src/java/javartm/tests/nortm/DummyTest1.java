@@ -18,7 +18,7 @@
  * along with javartm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package javartm.tests;
+package javartm.tests.nortm;
 
 import javartm.Transaction;
 
