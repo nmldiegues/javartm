@@ -14,19 +14,17 @@ Testing on other CPUs can be done using the [Intel Software Development Emulator
 
 ## Building
 
-Building is done with ant, and requires the [ant-cpptasks][ant-cpptasks] library.
+Building is done with ant, and requires both the [ant-cpptasks][ant-cpptasks] and the [ant-contrib][ant-contrib] libraries.
 
-Note that the `ant-contrib-cpptasks` package in Ubuntu is not installed to the right place, and ant will not be able to use it automatically. (To fix it, run `sudo ln -sf /usr/share/java/ant-contrib-cpptasks.jar /usr/share/ant/lib/.`)
+Note that both the `ant-contrib-cpptasks` and the `ant-contrib` packages in Ubuntu are not installed to the right places, and ant will not be able to use them automatically. (To fix it, run `sudo ln -s /usr/share/java/ant-contrib-cpptasks.jar /usr/share/ant/lib/` && `sudo ln -s /usr/share/java/ant-contrib.jar /usr/share/ant/lib/`)
 
-There are two alternatives for building:
-* ant's default targets need gcc >= 4.8, as this is the first version that has built-in support for RTM instructions.
-* The oldgcc-* targets provide a fallback option for other compilers. See `ant -projecthelp` for more details.
+Gcc's native suport for RTM (for versions >= 4.8) is used if available; otherwise javartm includes a fallback alternative.
 
 I plan on providing binary packages of javartm soon. If they aren't up yet, feel free to mail me to ask for them.
 
 ## Testing with Intel SDE
 
-The script `scripts/runtest.sh` runs a very simple test of javartm using the Intel SDE.
+The script `scripts/runpin.sh` can be used to run applications with javartm using the Intel SDE, which is supported on all x86-64 CPUs.
 
 ## Who am I
 
@@ -42,6 +40,7 @@ Thanks for reading this far! :)
 [intelsde]: http://software.intel.com/en-us/articles/intel-software-development-emulator
 [tsxspecs]: http://software.intel.com/sites/default/files/m/9/2/3/41604 "Intel Architecture Instruction Set Extensions Programming Reference"
 [ant-cpptasks]: http://ant-contrib.sourceforge.net/cpptasks/index.html
+[ant-contrib]: http://ant-contrib.sourceforge.net/
 [insthome]: https://fenix.ist.utl.pt/homepage/ist155460
 [eswweb]: http://www.esw.inesc-id.pt/
 [jvstm]: http://esw.inesc-id.pt/git/jvstm.git/
