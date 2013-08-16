@@ -1,4 +1,14 @@
 <project name="javartm" basedir="." default="jar">
+
+	<!-- Support for lower-casing a string.
+		See http://stackoverflow.com/questions/7129672/uppercase-lowercase-capitalize-an-ant-property -->
+	<scriptdef language="javascript" name="tolower">
+		<attribute name="string"/><attribute name="toproperty"/>
+		project.setProperty(attributes.get("toproperty"), attributes.get("string").toLowerCase());
+	</scriptdef>
+	<tolower string="${os.name}" toproperty="os.name.lower"/>
+
+	<!-- Project properties -->
 	<property name="src.dir" value="src"/>
 	<property name="java.src.dir" value="${src.dir}/java"/>
 	<property name="c.src.dir" value="${src.dir}/c"/>
@@ -12,9 +22,9 @@
 	<property name="jars.dir" value="lib"/>
 	<property name="dist.dir" location="dist"/>
 	<property name="dist.version" value="0.1"/>
-	<property name="jar.filename" value="javartm-${dist.version}.jar"/>
+	<property name="jar.filename" value="javartm-${dist.version}-${os.name.lower}-${os.arch}.jar"/>
 	<property name="jar.file" value="${dist.dir}/${jar.filename}"/>
-	<property name="jarfat.file" value="${dist.dir}/javartm-fat-${dist.version}.jar"/>
+	<property name="jarfat.file" value="${dist.dir}/javartm-fat-${dist.version}-${os.name.lower}-${os.arch}.jar"/>
 
 	<property name="antjars.dir" value="antlib"/>
 	<property name="ant-contrib.file" value="${antjars.dir}/ant-contrib-1.0b5-SNAPSHOT.jar"/>
@@ -217,7 +227,7 @@
 	</target>
 
        <!-- Targets for running tests -->
-	<target name="test-rtm" description="Runs tests (requires hardware *WITH* RTM support)">
+	<target name="test-rtm" description="Runs RTM tests (requires hardware *WITH* RTM support)">
 		<junit printsummary="yes" haltonfailure="yes">
 			<formatter type="plain" usefile="false"/>
 			<classpath>
@@ -232,7 +242,7 @@
 		</junit>
 	</target>
 
-	<target name="test-nortm" description="Runs tests (requires hardware *WITHOUT* RTM support)">
+	<target name="test-nortm" description="Runs no-RTM tests (requires hardware *WITHOUT* RTM support)">
 		<junit printsummary="yes" haltonfailure="yes">
 			<formatter type="plain" usefile="false"/>
 			<classpath>
