@@ -22,9 +22,10 @@
 	<property name="jars.dir" value="lib"/>
 	<property name="dist.dir" location="dist"/>
 	<property name="dist.version" value="0.1"/>
-	<property name="jar.filename" value="javartm-${dist.version}-${os.name.lower}-${os.arch}.jar"/>
-	<property name="jar.file" value="${dist.dir}/${jar.filename}"/>
+
+	<property name="jar.file" value="${dist.dir}/javartm-${dist.version}-${os.name.lower}-${os.arch}.jar"/>
 	<property name="jarfat.file" value="${dist.dir}/javartm-fat-${dist.version}-${os.name.lower}-${os.arch}.jar"/>
+	<property name="src-dist.file" value="${dist.dir}/javartm-${dist.version}-src.zip"/>
 
 	<property name="antjars.dir" value="antlib"/>
 	<property name="ant-contrib.file" value="${antjars.dir}/ant-contrib-1.0b5-SNAPSHOT.jar"/>
@@ -255,6 +256,21 @@
 				</fileset>
 			</batchtest>
 		</junit>
+	</target>
+
+	<!-- Other targets -->
+	<target name="src-dist" depends="clean" description="Builds a source distribution">
+		<mkdir dir="${dist.dir}"/>
+		<zip destfile="${src-dist.file}">
+			<fileset dir="./">
+				<exclude name="build/**"/>
+				<exclude name="dist/**"/>
+				<exclude name="sde-*.txt"/>
+				<exclude name="hs_err_pid*.txt"/>
+				<exclude name="pin-log.txt"/>
+				<exclude name=".git/**"/>
+			</fileset>
+		</zip>
 	</target>
 
 	<!-- aliases -->
