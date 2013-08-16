@@ -141,6 +141,7 @@
 			</try>
 			<catch>
 				<echo>Compile failed possibly due to -mrtm error, falling back to built-in rtm instrinsics</echo>
+				<fail>FIXME: Built-in rtm instrinsics currently broken, sorry</fail>
 				<trycatch>
 					<try>
 						<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnilib.file}">
