@@ -277,6 +277,13 @@
 		</zip>
 	</target>
 
+	<target name="mvn-local-install" depends="jar" description="Deploys the javartm jar to local maven repository">
+		<!-- TODO: Better alternative would be using https://maven.apache.org/ant-tasks/index.html -->
+		<exec executable="mvn">
+			<arg line="install:install-file -Dfile=${jar.file} -Dversion=${dist.version} -DgroupId=javartm -DartifactId=javartm -Dpackaging=jar"/>
+		</exec>
+	</target>
+
 	<!-- aliases -->
 	<target name="main" depends="build"/>
 	<target name="compile" depends="build"/>
