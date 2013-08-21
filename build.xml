@@ -24,7 +24,7 @@
 
 	<property name="jars.dir" value="lib"/>
 	<property name="dist.dir" location="dist"/>
-	<property name="dist.version" value="0.2"/>
+	<property name="dist.version" value="0.3-beta${DSTAMP}"/>
 
 	<property name="jar.file" value="${dist.dir}/javartm-${dist.version}-${os.name.lower}-${os.arch}.jar"/>
 	<property name="jarfat.file" value="${dist.dir}/javartm-fat-${dist.version}-${os.name.lower}-${os.arch}.jar"/>
