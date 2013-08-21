@@ -17,7 +17,9 @@ Testing on other CPUs can be done using the [Intel Software Development Emulator
 Building is done with ant.
 Gcc's native suport for RTM (for versions >= 4.8) is used if available; otherwise javartm includes a fallback alternative.
 
-I plan on providing binary packages of javartm soon. If they aren't up yet, feel free to mail me to ask for them.
+# Download
+
+Prebuilt packages can be found at [http://ivoanjo.github.io/javartm/bin-releases/][packages].
 
 ## Testing with Intel SDE
 
@@ -40,3 +42,4 @@ Thanks for reading this far! :)
 [eswweb]: http://www.esw.inesc-id.pt/
 [jvstm]: http://esw.inesc-id.pt/git/jvstm.git/
 [fenixf]: https://fenix-ashes.ist.utl.pt/trac/fenix-framework
+[packages]: http://ivoanjo.github.io/javartm/bin-releases/
