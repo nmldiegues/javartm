@@ -53,7 +53,7 @@ JNIEXPORT void JNICALL Java_javartm_Transaction_abort__(JNIEnv *env, jclass cls)
 	throwException(env);
 }
 
-JNIEXPORT void JNICALL Java_javartm_Transaction_abort__J(JNIEnv *env, jclass cls, jlong reason) {
+JNIEXPORT void JNICALL Java_javartm_Transaction_abort__I(JNIEnv *env, jclass cls, jint reason) {
 	throwException(env);
 }
 
