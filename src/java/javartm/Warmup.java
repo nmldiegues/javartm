@@ -45,7 +45,11 @@ public class Warmup {
 	/** Warms up the received runnable by calling it repeatedly until the VM JIT kicks in **/
 	public static void doWarmup(AtomicRunnable<?> r) {
 		r.beforeWarmup();
-		for (int i = 0; i < ITERATIONS; i++) r.run();
+		for (int i = 0; i < ITERATIONS; i++) {
+			r.beforeWarmupIteration();
+			r.run();
+			r.afterWarmupIteration();
+		}
 		r.afterWarmup();
 		try {
 			Thread.sleep(10);

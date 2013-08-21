@@ -27,6 +27,8 @@ package javartm;
 public abstract class AtomicRunnable<V> {
 	protected void beforeWarmup() { }
 	protected void afterWarmup() { }
+	protected void beforeWarmupIteration() { }
+	protected void afterWarmupIteration() { }
 
 	public abstract V run();
 
