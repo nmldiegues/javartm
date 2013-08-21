@@ -26,11 +26,11 @@
 
 // Needed for JNI
 #include <jni.h>
-#include "javartm_TestRtmSupport.h"
+#include "javartm_CheckRtmSupport.h"
 
 #define bit_RTM (1 << 11)
 
-JNIEXPORT jboolean JNICALL Java_javartm_TestRtmSupport_rtmAvailable(JNIEnv *env, jclass cls) {
+JNIEXPORT jboolean JNICALL Java_javartm_CheckRtmSupport_rtmAvailable(JNIEnv *env, jclass cls) {
 	unsigned int eax, ebx, ecx, edx;
 	if (__get_cpuid_max(0, NULL) >= 7) {
 		__cpuid_count(7, 0, eax, ebx, ecx, edx);

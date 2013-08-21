@@ -25,15 +25,15 @@ import java.io.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class TestRtmSupport {
-	private static final Logger Log = LoggerFactory.getLogger(TestRtmSupport.class);
+final class CheckRtmSupport {
+	private static final Logger Log = LoggerFactory.getLogger(CheckRtmSupport.class);
 
 	static {
 		// Bind native methods
-		Transaction.loadNativeLibrary("testrtmsupport");
+		Transaction.loadNativeLibrary("checkrtmsupport");
 	}
 
-	private TestRtmSupport() { }
+	private CheckRtmSupport() { }
 	protected native static boolean rtmAvailable();
 }
 
@@ -49,7 +49,7 @@ public final class Transaction {
 	public static final int ABORT_DEBUG 	= 1 << 4;
 	public static final int ABORT_NESTED 	= 1 << 5;
 
-	public static final boolean RTM_AVAILABLE = TestRtmSupport.rtmAvailable();
+	public static final boolean RTM_AVAILABLE = CheckRtmSupport.rtmAvailable();
 
 	static {
 		if (!RTM_AVAILABLE) {

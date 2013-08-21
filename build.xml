@@ -77,17 +77,17 @@
 				<path path="${classes.dir}"/>
 			</classpath>
 			<class name="javartm.Transaction"/>
-			<class name="javartm.TestRtmSupport"/>
+			<class name="javartm.CheckRtmSupport"/>
 		</javah>
 	</target>
 
-	<target name="jni-compile-libtestrtmsupport" depends="jni-headers">
+	<target name="jni-compile-libcheckrtmsupport" depends="jni-headers">
 		<mkdir dir="${jnioutput.dir}"/>
-		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnioutput.dir}/testrtmsupport">
+		<cc outtype="shared" subsystem="console" objdir="${jni.dir}" outfile="${jnioutput.dir}/checkrtmsupport">
 			<compilerarg value="-Wall"/>
 			<compilerarg value="-O2"/>
 			<compilerarg value="-std=c99"/>
-			<fileset dir="${c.src.dir}" includes="**/TestRtmSupport.c"/>
+			<fileset dir="${c.src.dir}" includes="**/CheckRtmSupport.c"/>
 			<includepath>
 				<path path="${java.home}/../include"/>
 				<path path="${jni.dir}"/>
@@ -129,7 +129,7 @@
 					<compilerarg value="-march=core-avx2"/>
 					<fileset dir="${c.src.dir}"
 						includes="**/*.c"
-						excludes="**/TestRtmSupport.c **/Transaction-dummy.c"/>
+						excludes="**/CheckRtmSupport.c **/Transaction-dummy.c"/>
 					<includepath>
 						<path path="${java.home}/../include"/>
 						<path path="${jni.dir}"/>
@@ -156,7 +156,7 @@
 							<defineset define="JAVARTM_RTM_INTRINSICS"/>
 							<fileset dir="${c.src.dir}"
 								includes="**/*.c"
-								excludes="**/TestRtmSupport.c **/Transaction-dummy.c"/>
+								excludes="**/CheckRtmSupport.c **/Transaction-dummy.c"/>
 							<includepath>
 								<path path="${java.home}/../include"/>
 								<path path="${jni.dir}"/>
@@ -175,7 +175,7 @@
 							<defineset define="JAVARTM_RTM_INTRINSICS"/>
 							<fileset dir="${c.src.dir}"
 								includes="**/*.c"
-								excludes="**/TestRtmSupport.c **/Transaction-dummy.c"/>
+								excludes="**/CheckRtmSupport.c **/Transaction-dummy.c"/>
 							<includepath>
 								<path path="${java.home}/../include"/>
 								<path path="${jni.dir}"/>
@@ -190,7 +190,7 @@
 		</trycatch>
 	</target>
 
-	<target name="jni-compile" depends="jni-compile-libtestrtmsupport,jni-compile-libjavartm-dummy,jni-compile-libjavartm"/>
+	<target name="jni-compile" depends="jni-compile-libcheckrtmsupport,jni-compile-libjavartm-dummy,jni-compile-libjavartm"/>
 
 	<target name="build" depends="clean,java-compile,jni-compile" description="Builds javartm (java and native resources)"/>
 
