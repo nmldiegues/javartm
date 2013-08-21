@@ -34,7 +34,7 @@ public final class Test3 {
 			}
 		};
 
-		Warmup.doWarmup(transaction);
+		transaction.warmup();
 
 		x = 0;
 		y = 0;

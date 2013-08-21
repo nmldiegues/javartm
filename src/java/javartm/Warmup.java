@@ -23,7 +23,7 @@ package javartm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Warmup {
+public final class Warmup {
 	private static final Logger Log = LoggerFactory.getLogger(Warmup.class);
 
 	// Default JIT compiler threshold for current hotspot versions
@@ -32,6 +32,8 @@ public class Warmup {
 
 	// In some cases, the value above is not enough, so let's arbitrarily do a bit more
 	private static final int ITERATIONS = HOTSPOT_JIT_THRESHOLD * 3;
+
+	private Warmup() { }
 
 	/** Warms up the received runnable by calling it repeatedly until the VM JIT kicks in **/
 	public static void doWarmup(Runnable r) {
@@ -43,7 +45,7 @@ public class Warmup {
 	}
 
 	/** Warms up the received runnable by calling it repeatedly until the VM JIT kicks in **/
-	public static void doWarmup(AtomicRunnable<?> r) {
+	protected static void doWarmup(AtomicRunnable<?> r) {
 		r.beforeWarmup();
 		for (int i = 0; i < ITERATIONS; i++) {
 			r.beforeWarmupIteration();

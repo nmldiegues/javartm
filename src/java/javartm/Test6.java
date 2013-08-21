@@ -47,7 +47,7 @@ public final class Test6 {
 			}
 		};
 
-		Warmup.doWarmup(transaction);
+		transaction.warmup();
 
 		Thread[] threads = new Thread[Runtime.getRuntime().availableProcessors()];
 

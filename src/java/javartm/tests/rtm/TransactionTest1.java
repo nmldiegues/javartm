@@ -22,7 +22,6 @@ package javartm.tests.rtm;
 
 import javartm.AtomicRunnable;
 import javartm.Transaction;
-import javartm.Warmup;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,7 +67,7 @@ public class TransactionTest1 {
 				return true;
 			}
 		};
-		Warmup.doWarmup(transaction);
+		transaction.warmup();
 		Boolean result = Transaction.doTransactionally(transaction);
 		Assert.assertTrue(result);
 	}

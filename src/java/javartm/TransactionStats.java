@@ -36,6 +36,8 @@ public final class TransactionStats {
 
 	private static final int[] STATS_COUNT = new int[TX_RETURN_CODES.length];
 
+	private TransactionStats() { }
+
 	public static void registerResult(int status) {
 		for (int i = 0; i < TX_RETURN_CODES.length; i++) {
 			if (status == (Integer) TX_RETURN_CODES[i][0]) {
