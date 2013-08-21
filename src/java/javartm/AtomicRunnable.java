@@ -34,5 +34,7 @@ public abstract class AtomicRunnable<V> {
 
 	public final void warmup() {
 		Warmup.doWarmup(this);
+		// In some cases, it seems calling doWarmup once is not enough...
+		Warmup.doWarmup(this);
 	}
 }
